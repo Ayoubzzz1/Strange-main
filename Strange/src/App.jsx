@@ -9,6 +9,9 @@ import Home from './pages/Home';
 import Verfiy from './Auth/Verfiy';
 import Chat from './pages/Chat';
 import { useUserStatus } from './online comp/useUserStatus';
+import PWAInstall from './components/PWAInstall';
+import PWAUpdate from './components/PWAUpdate';
+import PWAStatus from './components/PWAStatus';
 
 function App() {
   useUserStatus();
@@ -31,6 +34,9 @@ function App() {
         {/* Catch-all route for any undefined routes */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <PWAInstall />
+      <PWAUpdate />
+      <PWAStatus />
     </Router>
   );
 }

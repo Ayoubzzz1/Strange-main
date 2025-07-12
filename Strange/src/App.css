@@ -1,0 +1,61 @@
+/* PWA Animations */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-50%) translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInTop {
+  from {
+    transform: translateX(-50%) translateY(-100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+.pwa-install-banner {
+  animation: slideIn 0.3s ease-out;
+}
+
+.pwa-update-banner {
+  animation: slideInTop 0.3s ease-out;
+}
+
+/* PWA Status Indicator */
+.pwa-status {
+  transition: background-color 0.3s ease;
+}
+
+/* Responsive Design for PWA */
+@media (max-width: 768px) {
+  .pwa-install-banner,
+  .pwa-update-banner {
+    max-width: 95vw;
+    padding: 12px 16px;
+  }
+  
+  .pwa-install-banner div,
+  .pwa-update-banner div {
+    font-size: 14px;
+  }
+}

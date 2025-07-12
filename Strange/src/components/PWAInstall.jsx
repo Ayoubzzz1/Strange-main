@@ -4,10 +4,25 @@ import toast from 'react-hot-toast';
 function PWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
+  const [isPWAInstalled, setIsPWAInstalled] = useState(false);
+  const [showManualInstall, setShowManualInstall] = useState(false);
 
   useEffect(() => {
+    // Check if already installed
+    const checkIfInstalled = () => {
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        setIsPWAInstalled(true);
+        return;
+      }
+      if (window.navigator.standalone === true) {
+        setIsPWAInstalled(true);
+        return;
+      }
+    };
+
     // Listen for the beforeinstallprompt event
     const handleBeforeInstallPrompt = (e) => {
+      console.log('Install prompt triggered');
       // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
       // Stash the event so it can be triggered later
@@ -18,31 +33,82 @@ function PWAInstall() {
 
     // Listen for the appinstalled event
     const handleAppInstalled = () => {
+      console.log('App installed');
       // Hide the install button
       setShowInstallButton(false);
+      setShowManualInstall(false);
       // Clear the deferredPrompt
       setDeferredPrompt(null);
+      setIsPWAInstalled(true);
       toast.success('App installed successfully!');
     };
+
+    // Check if service worker is registered
+    const checkServiceWorker = async () => {
+      if ('serviceWorker' in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.getRegistration();
+          if (registration) {
+            console.log('Service worker is registered');
+          } else {
+            console.log('No service worker found');
+          }
+        } catch (error) {
+          console.error('Error checking service worker:', error);
+        }
+      }
+    };
+
+    checkIfInstalled();
+    checkServiceWorker();
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
+    // Show manual install button after 10 seconds if no automatic prompt
+    const manualInstallTimer = setTimeout(() => {
+      if (!isPWAInstalled && !showInstallButton) {
+        setShowManualInstall(true);
+      }
+    }, 10000);
+
+    // Also check periodically for install prompt
+    const checkInterval = setInterval(() => {
+      if (!isPWAInstalled && !showInstallButton) {
+        // Check if we can install
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistration().then(registration => {
+            if (registration && registration.active) {
+              // Service worker is active, app should be installable
+              console.log('Service worker active, app should be installable');
+            }
+          });
+        }
+      }
+    }, 5000);
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
+      clearInterval(checkInterval);
+      clearTimeout(manualInstallTimer);
     };
-  }, []);
+  }, [isPWAInstalled, showInstallButton]);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      console.log('No deferred prompt available');
+      return;
+    }
 
+    console.log('Showing install prompt');
     // Show the install prompt
     deferredPrompt.prompt();
 
     // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice;
 
+    console.log('User choice:', outcome);
     if (outcome === 'accepted') {
       toast.success('App installation started!');
     } else {
@@ -54,7 +120,30 @@ function PWAInstall() {
     setShowInstallButton(false);
   };
 
-  if (!showInstallButton) return null;
+  const handleManualInstall = () => {
+    // Show instructions for manual installation
+    const instructions = `
+      To install this app:
+      
+      1. Click the menu (⋮) in your browser
+      2. Select "Install app" or "Add to Home Screen"
+      3. Follow the prompts to install
+      
+      Or look for the install icon (📱) in your browser's address bar.
+    `;
+    
+    toast(instructions, {
+      duration: 8000,
+      icon: '📱',
+    });
+  };
+
+  // Don't show if already installed
+  if (isPWAInstalled) return null;
+
+  // Show either automatic or manual install button
+  const shouldShowInstall = showInstallButton || showManualInstall;
+  if (!shouldShowInstall) return null;
 
   return (
     <div className="pwa-install-banner" style={{
@@ -78,11 +167,11 @@ function PWAInstall() {
           Install Stranger App
         </div>
         <div style={{ fontSize: '14px', opacity: 0.8 }}>
-          Get the best experience with our app
+          {showInstallButton ? 'Get the best experience with our app' : 'Click for installation instructions'}
         </div>
       </div>
       <button
-        onClick={handleInstallClick}
+        onClick={showInstallButton ? handleInstallClick : handleManualInstall}
         style={{
           backgroundColor: '#ff5733',
           color: 'white',
@@ -94,10 +183,13 @@ function PWAInstall() {
           whiteSpace: 'nowrap'
         }}
       >
-        Install
+        {showInstallButton ? 'Install' : 'How to Install'}
       </button>
       <button
-        onClick={() => setShowInstallButton(false)}
+        onClick={() => {
+          setShowInstallButton(false);
+          setShowManualInstall(false);
+        }}
         style={{
           backgroundColor: 'transparent',
           color: 'white',

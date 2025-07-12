@@ -19,6 +19,27 @@ function App() {
   // Add console log for debugging
   useEffect(() => {
     console.log('App component mounted');
+    
+    // Debug PWA status
+    console.log('PWA Debug Info:');
+    console.log('- HTTPS:', window.location.protocol === 'https:');
+    console.log('- Service Worker:', 'serviceWorker' in navigator);
+    console.log('- Standalone:', window.matchMedia('(display-mode: standalone)').matches);
+    console.log('- Navigator standalone:', window.navigator.standalone);
+    
+    // Check if manifest is loaded
+    const manifestLink = document.querySelector('link[rel="manifest"]');
+    console.log('- Manifest link:', manifestLink ? 'Found' : 'Not found');
+    
+    // Check service worker registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then(registration => {
+        console.log('- Service Worker registered:', !!registration);
+        if (registration) {
+          console.log('- Service Worker state:', registration.active ? 'Active' : 'Inactive');
+        }
+      });
+    }
   }, []);
 
   return (

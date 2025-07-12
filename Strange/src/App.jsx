@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';  // Import useEffect
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -12,6 +12,12 @@ import { useUserStatus } from './online comp/useUserStatus';
 
 function App() {
   useUserStatus();
+  
+  // Add console log for debugging
+  useEffect(() => {
+    console.log('App component mounted');
+  }, []);
+
   return (
     <Router>
       <TitleUpdater />
@@ -22,7 +28,8 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/verif" element={<Verfiy />} />
         <Route path="/chat" element={<Chat />} />
-
+        {/* Catch-all route for any undefined routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

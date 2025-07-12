@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { auth, db } from '../online comp/firebase-config';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -17,6 +17,11 @@ function Register() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+
+  // Add console log for debugging
+  useEffect(() => {
+    console.log('Register component mounted');
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
